@@ -1,0 +1,58 @@
+﻿/* ----------- Non-Retina Screens ----------- */
+@media screen and (min-width: 768px) {
+
+    .h:hover {
+        cursor: pointer;
+    }
+
+    m-notification {
+        max-width: 300px;
+        left: initial;
+        right: 20px;
+        bottom: 20px;
+    }
+    
+    i.selectable:hover {
+        cursor: pointer;
+        opacity: .25;
+    }
+    
+    .cards.selectable m-card:hover,
+    .list.selectable m-card:hover {
+        cursor: pointer;
+        background-color: #FAFAFA;
+    }
+    
+    m-dateoptions span:hover,
+    m-timeoptions span:hover,
+    m-datebody table td:hover {
+        cursor: pointer;
+    }
+
+    m-module {
+        width: 30vw;
+        max-width: 30vw;
+        margin: 0 auto;
+        -webkit-box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    }
+
+    m-a:hover {
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+}
+
+@media screen and (min-width: 1024px) {
+    
+    
+}
+
+@media screen and (min-width: 1800px) {
+    
+    
+
+}
+
+/* ----------- Retina Screens ----------- */
