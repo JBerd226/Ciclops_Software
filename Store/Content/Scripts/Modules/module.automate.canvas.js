@@ -1,29 +1,18 @@
 ﻿`use strict`;
 
-function newId() {
-    // Alphanumeric characters
-    const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let autoId = '';
-    for (let i = 0; i < 20; i++) {
-      autoId += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    //assert(autoId.length === 20, 'Invalid auto ID: ' + autoId);
-    return autoId;
-}
-
 const AutomateCanvas = (function () {
 
     //Private ------------------------------------------------
     let _page = 1;
     let _index = 0;
+    let _snapPoints = [];
     const constructorElement = function (isType, type, level, width, height, sortOrder, text, item, order) {
 
         const fontFamily = (level >= 3) ? order.company.fontHeader : ((level >= 1) ? order.company.fontSubHeader : order.company.fontBody);
         const arr = getFontSizes(item.width, item.height,  [fontFamily], level);
         const obj = arr[0];
         
-        this.elementId = newId();
+        this.elementId = _getNewId();
         this.pageId = ``;
         this.groupId = ``;
         this.fileId = ``;
@@ -92,6 +81,8 @@ const AutomateCanvas = (function () {
             ]; 
         } 
     }];
+    let _zoom = .5;
+    let _snapTolerance = 10;
     
     const _initDraggable = function (element, page, item) {
         
@@ -116,65 +107,59 @@ const AutomateCanvas = (function () {
                 click.x = event.clientX;
                 click.y = event.clientY;
             },
-            containment: $(`m-canvas[data-sortorder="${page.sortOrder}"]`), //doesnt work for some reason
             cursor: "move",
             drag: function (e, ui) {
                 
-                const zoom = .5;
                 const original = ui.originalPosition;
-
-                // jQuery will simply use the same object we alter here
+                
                 ui.position = {
-                    left: (e.clientX - click.x + original.left) / zoom,
-                    top:  (e.clientY - click.y + original.top ) / zoom
+                    left:   (e.clientX - click.x + original.left) / _zoom,
+                    top:    (e.clientY - click.y + original.top) / _zoom
                 };
 
-                const draggable = $(this).data("ui-draggable");
-                const x = $(this).position().left - $(this).parent().position().left;
-                const y = $(this).position().top;
+                $(`m-snap`).addClass(`hidden`);
+
+                //for snapPoints isLeft true
+                for (let snapPoint of _snapPoints.filter(function (obj) { return obj.isLeft; }))
+                    if ((ui.position.left + _snapTolerance) > snapPoint.value && (ui.position.left - _snapTolerance) < snapPoint.value) {
+                        ui.position.left = snapPoint.value;
+                        _editHtmlSnaps(snapPoint, element, item);
+                    }
+
+                //for snapPoints isLeft false
+                for (let snapPoint of _snapPoints.filter(function (obj) { return !obj.isLeft; }))
+                    if ((ui.position.top + _snapTolerance) > snapPoint.value && (ui.position.top - _snapTolerance) < snapPoint.value) {
+                        ui.position.top = snapPoint.value;
+                        _editHtmlSnaps(snapPoint, element, item);
+                    }
+
+                //for left min and max
+                if (ui.position.left < item.bleed)
+                    ui.position.left = item.bleed;
                 
-                console.log(y);
-                $(this).addClass("dragging");
+                if ((ui.position.left + element.width) > (item.width - item.bleed))
+                    ui.position.left = (item.width - item.bleed) - element.width;
+
+                //for top min and max
+                if (ui.position.top < item.bleed)
+                    ui.position.top = item.bleed;
+
+                if ((ui.position.top + element.height) > (item.height - item.bleed))
+                    ui.position.top = (item.height - item.bleed) - element.height;
                 
-                if (ui.position.left > item.bleed) {
-                    
-                    $handle.css({   left: ui.position.left, top: ui.position.top });
-                    $el.css({       left: ui.position.left, top: ui.position.top });
-
-                    $.each(draggable.snapElements, function (index, el) {
-                        ui = $.extend({}, ui, {
-                            snapElement: $(el.item),
-                            snapping: el.snapping
-                        });
-                        if (el.snapping) {
-                            if (!el.snappingKnown) {
-                                el.snappingKnown = true;
-                                draggable._trigger("snapped", e, ui);
-                            }
-                        } else if (el.snappingKnown) {
-                            el.snappingKnown = false;
-                            draggable._trigger("snapped", e, ui);
-                        }
-                    });
-
-                }
-
-            },
-            snap: "m-linecenter",
-            snapTolerance: 10,
-            snapped: function (e, ui) {
-                $(`m-canvas[data-sortOrder="${page.sortOrder}"] m-linecenterdisplay`).toggleClass(`hidden`);
+                $handle.css({   left: ui.position.left, top: ui.position.top });
+                $el.css({       left: ui.position.left, top: ui.position.top });
+                
             },
             stop: function (event, ui) {
                 
-                $('m-linecenterdisplay').addClass("hidden");
-                $(this).removeClass("dragging");
+                $('m-snap').addClass("hidden");
                 
                 element.x = parseInt(ui.position.left);
                 element.y = parseInt(ui.position.top);
                 
-                console.log(element.x);
-                console.log(element.y);
+                //console.log(element.x);
+                //console.log(element.y);
                 //_addEditDelete();
 
             }
@@ -195,7 +180,7 @@ const AutomateCanvas = (function () {
                 element.x = parseInt($(this).css("left").replace("px", ""));
                 element.width = parseInt($(this).css("width").replace("px", ""));
                 
-                console.log(element);
+                //console.log(element);
                 //_addEditDelete();
 
             }
@@ -263,6 +248,29 @@ const AutomateCanvas = (function () {
         };
 
     }
+    const _editHtmlSnaps = function (snapPoint, element, item) {
+
+        let value = 0;
+        const el = (snapPoint.isLeft) ? element.width : element.height;
+
+        if (snapPoint.type == 0) { //Left or top
+            value = snapPoint.value - item.bleed;
+        } else if (snapPoint.type == 1) { //Center or middle
+            value = snapPoint.value + (el / 2) - item.bleed;
+        } else if (snapPoint.type == 2) { //Right or bottom
+            value = snapPoint.value + el - item.bleed;
+        }
+
+        if (snapPoint.isLeft)
+            $(`m-snap[data-type="left"]`).css({ left: value }).removeClass(`hidden`);
+        else
+            $(`m-snap[data-type="top"]`).css({ top: value }).removeClass(`hidden`);
+
+    }
+    const _editZoom = function (value) {
+        _zoom = value / 100;
+        $(`m-canvas`).css(`transform`, `scale(${_zoom})`);
+    }
 
     const _getEventElements = function (group, item, order) {
 
@@ -290,6 +298,13 @@ const AutomateCanvas = (function () {
             
         return arr;
 
+    }
+    const _getNewId = function () {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let autoId = '';
+        for (let i = 0; i < 20; i++)
+            autoId += chars.charAt(Math.floor(Math.random() * chars.length));
+        return autoId;
     }
 
     const _getPages = function (item, itemCallback, order) {
@@ -405,12 +420,12 @@ const AutomateCanvas = (function () {
             async.each(item.pages, function(page, pageCallback) {
                 console.log(`page start`);
             
-                console.log(page);
+                //console.log(page);
                 $(`m-body`).append(`<m-canvas data-sortOrder="${page.sortOrder}" class="" style="width: ${item.width - (item.bleed + item.trim)}px;height: ${item.height - (item.bleed + item.trim)}px;">
                         <m-handles style="left: -${item.bleed}px;top: -${item.bleed}px;"></m-handles>
                         <m-elements style="left: -${item.bleed}px;top: -${item.bleed}px;"></m-elements>
-                        <m-linecenter></m-linecenter>
-                        <m-linecenterdisplay></m-linecenterdisplay>
+                        <m-snap data-type="left" class="hidden"></m-snap>
+                        <m-snap data-type="top" class="hidden"></m-snap>
                     </m-canvas>`);
                 
                 for (let element of page.elements)
@@ -440,28 +455,23 @@ const AutomateCanvas = (function () {
     }
     const _getBeforeStartDraggable = function (element, page, item) {
         
-        //const halfTextWidth = ;
-        //const halfItemWidth = ;
-        //let mL1 = (halfTextWidth + (halfItemWidth / 2)) - item.bleed;
-        //let mL2 = (halfTextWidth + ((halfItemWidth / 2) + halfItemWidth)) - item.bleed;
-        //let mL = ;
+        const halfElementWidth = (element.width / 2) - 1;
+        const halfItemWidth = item.width / 2;
+        const halfElementHeight = (element.height / 2) - 1;
+        const halfItemHeight = item.height / 2;
         
-        $('m-linecenter[data-position="center"]').css("margin-left", (((element.width / 2) + (item.width / 2)) - 1) - item.bleed + "px");
-
-        //BELOW was for collages I also got rid of ty mf and video two center lines 
-        //now that the cover of rb wont have hole dont have to worry about adjusting center
-        //if (Template.is.Item.ItemID == 21 && Template.is.Orientation == 1) { // PRODUCTS WITH TWO CENTERLINES
-        
-        //    $('m-linecenter[data-position="left"]').css("margin-left", mL1 + "px");
-        //    $('m-linecenter[data-position="right"]').css("margin-left", mL2 + "px");
-        
-        //    $('m-linecenterdisplay[data-position="left"]').css("margin-left", (mL1 - halfTextWidth) + "px");
-        //    $('m-linecenterdisplay[data-position="right"]').css("margin-left", (mL2 - halfTextWidth) + "px");
-        
-        //} else if (Template.is.Item.ItemID == 11 && page.sortOrder == 1) {
-        //    $('m-linecenter[data-position="center"]').css("margin-left", ((halfItemWidth + Template.registerBookOffset) - halfTextWidth) + "px");
-        //} else {
-        //}
+        _snapPoints = [];
+        //always do the calculations for value by using the left most or top most
+        _snapPoints.push({
+            value: (halfItemWidth - halfElementWidth),// / _zoom,// - item.bleed),// / _zoom,
+            type: 1, //0 left/top 1 center/middle 2 right/bottom tells me where to place snap
+            isLeft: true
+        });
+        _snapPoints.push({
+            value: (halfItemHeight - halfElementHeight),// / _zoom,// - item.bleed),// / _zoom,
+            type: 1, //0 left/top 1 center/middle 2 right/bottom tells me where to place snap
+            isLeft: false
+        });
 
     }
 
@@ -666,11 +676,11 @@ const AutomateCanvas = (function () {
         const h = element.height;
         const x = 0;
         const y = 0;
-        const voidWidth = element.width - m;
-        const voidHeight = element.height - m;
+        const voidWidth = element.voidWidth - m;
+        const voidHeight = element.voidHeight - m;
         const voidX = element.voidX + (m / 2);
         const voidY = element.voidY + (m / 2);
-        const voidRadius = element.width;
+        const voidRadius = element.voidRadius;
         const r = voidX + voidWidth;
         const b = (voidY + voidHeight) - voidRadius;
         const pageX = element.x;
@@ -785,8 +795,6 @@ const AutomateCanvas = (function () {
             } else {
                 
                 width = _getImageWidth(item.width * item.height);
-                console.log(`--IMG WIDTH--`);
-                console.log(width);
                 height = width * 1.27;
 
             }
@@ -1119,9 +1127,12 @@ const AutomateCanvas = (function () {
             }]
         }]
     };
+    const init = function () {
+        $(document).on(`tap`, `#btnEditZoom`, function () { _editZoom($(`#txtZoom`).val()); });
+    }
     
     const addToCanvas = function (element, page, item) {
-        console.log(element);
+        //console.log(element);
         $(`m-handle[data-id="${element.elementId}"], img[data-id="${element.elementId}"]`).remove();
         
         //if ($(`m-layers m-page.active`).attr(`data-sortOrder`) == element.page) Template.editLayerPage(element.page);
@@ -1151,6 +1162,7 @@ const AutomateCanvas = (function () {
     
     return {
         is: is,
+        init: init,
         addToCanvas: addToCanvas,
         start: start
     }

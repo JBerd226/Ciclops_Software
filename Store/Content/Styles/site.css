@@ -154,8 +154,8 @@ m-handle.active .ui-resizable-handle {
 }
 /*----------------HANDLES---------------*/
 
-/*----------------CENTER LINE----------*/
-m-linecenterdisplay {
+/*----------------SNAP----------*/
+m-snap {
     width: 1px;
     margin-top: 0;
     height: 100%;
@@ -163,25 +163,15 @@ m-linecenterdisplay {
     z-index: 10000;
     position: absolute;
 }
-
-m-linecenterdisplayvisible {
-    width: 1px;
-    margin-top: 0;
-    height: 100%;
-    opacity: .5;
-    border: .5px dashed red;
-    z-index: 10000;
-    position: absolute;
-}
-
-m-linecenter {
-    width: 1px;
-    margin-top: 0;
-    height: 100%;
-    background-color: transparent;
-    position: absolute;
-}
-/*----------------CENTER LINE----------*/
+    m-snap[data-type="left"] {
+        width: 1px;
+        height: 100%;
+    }
+    m-snap[data-type="top"] {
+        width: 100%;
+        height: 1px;
+    }
+/*----------------SNAP----------*/
 /*--M-CANVAS-------------------------------------------------------------------------------*/
 
 /*--M-AUTHENTICATION-------------------------------------------------------------------------------*/

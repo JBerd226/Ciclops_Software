@@ -10,6 +10,9 @@
     width: 100%;
     z-index: 999;
 }
+.hidden {
+    visibility: hidden;
+}
 
 p {
     font-size: .9em;

@@ -42,7 +42,7 @@ const Application = (function () {
         } else if (!user.emailVerified) {
             $(`body`).prepend(`<m-authentication>${SignUp.getHtmlCardValidate()}</m-authentication>`);
         } else if (user.emailVerified) {
-            $(`body`).prepend(`<m-body>Logged In <m-button data-type="primary" id="btnSignOut">Sign Out</m-button></m-body>`);
+            $(`body`).prepend(Application.getHtml());
         }
 
     }
@@ -64,6 +64,7 @@ const Application = (function () {
         const init = function () {
             
             AutomateCanvas.start(AutomateCanvas.is);
+            AutomateCanvas.init();
 
             Application.init();
             Module.init();
@@ -154,6 +155,18 @@ const Application = (function () {
         });
         return arr;
     }
+
+    const getHtml = function () {
+        return `
+
+            <m-body>
+                Logged In <m-button data-type="primary" id="btnSignOut">Sign Out</m-button>
+                <input type="text" id="txtZoom" />
+                <m-button data-type="primary" id="btnEditZoom">Edit Zoom</m-button>
+            </m-body>
+
+            `;
+    }
     
     return {
         Load: Load,
@@ -162,7 +175,8 @@ const Application = (function () {
         init: init,
         addError: addError,
         getFunctionByName: getFunctionByName,
-        getArrayFromQuerySnapshot: getArrayFromQuerySnapshot
+        getArrayFromQuerySnapshot: getArrayFromQuerySnapshot,
+        getHtml: getHtml
     }
 
 })();
