@@ -23,13 +23,13 @@ const AutomateCanvas = (function () {
         this.x = 0;
         this.y = 0;
         this.marginTop = 0;
-        this.marginBottom = obj.fontSize / 2;//5 / (Math.abs(level) + 1);//obj.fontSize * 2;
-        this.voidShape = 1; //0 rectangle 1 oval
-        this.voidWidth = 0;
-        this.voidHeight = 0;
-        this.voidX = 0;
-        this.voidY = 0;
-        this.voidRadius = 0;
+        this.marginBottom = (isType == 0 && level == 0) ? obj.fontSize : 0;//obj.fontSize / 2;//5 / (Math.abs(level) + 1);//obj.fontSize * 2;
+        this.voidShape =    0; //0 rectangle 1 oval
+        this.voidWidth =    (isType == 1 && type == 3) ? width : 0;
+        this.voidHeight =   (isType == 1 && type == 3) ? height : 0;
+        this.voidX =        0;
+        this.voidY =        0;
+        this.voidRadius =   (isType == 1 && type == 3) ? 25 : 0;
         this.sortOrder = sortOrder;
         this.opacity = 1;
         this.text = text;
@@ -196,55 +196,44 @@ const AutomateCanvas = (function () {
 
     const _editGroupsY = function (r, page, item, order) {
         
-        let groupElements = [];
+        let elements = [];
         let y = item.bleed + item.trim;
+        let height = 0;
 
         page.groups = page.groups.sort(function(a, b){ return parseFloat(a.sortOrder) - parseFloat(b.sortOrder); });
         for (let group of page.groups) {
 
-            const elements = _groupArr.filter(function (i) { return i.type == group.type; })[0].elements(group, item, order);
-            groupElements = groupElements.concat(elements);
+            const arr = _groupArr.filter(function (i) { return i.type == group.type; })[0].elements(group, item, order);
+            elements = elements.concat(arr);
             
-            //somehow find a total height
-            //make sure that total height is less than max height 
+            for (let element of arr) {
 
-            //Or do the reverse
-            //get max height
-            for (let element of elements) {
-
-                let el;
-
-                if (element.isImage) {
-                    el = _getImageAutomation(element, r, page, item, order);
-                }
-                //if (obj.isText)
-                //    obj.width = _getTextWidth(obj);
-                element.width           = (element.isText) ? item.width - ((item.bleed + item.trim) * 2)    : el.width;
-                element.height          = (element.isText) ? _getTextHeight(element, r)                     : el.height;
-                element.x               = (element.isText) ? item.bleed + item.trim                         : (item.width - el.width) / 2;
-                element.path            = (element.isText) ? ``                                             : el.path;
-                element.marginTop       = element.marginTop * r;
-                element.marginBottom    = element.marginBottom * r;
+                const el = (element.isText) ? _getTextAutomation(element, r, page, item, order) : _getImageAutomation(element, r, page, item, order);
+                
+                element.width           = el.width;
+                element.height          = el.height;
+                element.x               = el.x;
+                element.path            = el.path;
+                element.voidWidth       = el.voidWidth;
+                element.voidHeight      = el.voidHeight;
+                element.marginTop       = el.marginTop;
+                element.marginBottom    = el.marginBottom;
+                element.fontSize        = el.fontSize; 
                 element.y               = y + element.marginTop;
-                element.fontSize        = element.fontSize * r;
-            
+                
                 y += element.marginTop + element.height + element.marginBottom;
-
-                if (element.isImage && element.type == 3)
-                    console.log(element);
-
+                height += element.marginTop + element.height + element.marginBottom;
+                
             }
             
-            //find total number of groups then divide by height of item
-            //nix above
             //find current height of the group just completed and take a percentage of that group? the bigger the group the bigger the bottom margin?
             //y += 10;
 
         }
 
         return {
-            y: y,
-            groupElements: groupElements
+            height: height,
+            elements: elements
         };
 
     }
@@ -337,30 +326,23 @@ const AutomateCanvas = (function () {
     const _getGroups = function (page, pageCallback, item, order) {
         
         let obj = _editGroupsY(1, page, item, order);
-        let groupElements = obj.groupElements;
-        let y = obj.y;
         let maxHeight = item.height - ((item.bleed + item.trim) * 2);
+        let diffHeight = 0;
         
-        console.log(`---BEFORE---`);
-        console.log(maxHeight);
-        console.log(y);
         //if it is taller than take the ratio of the two heights and get the percentage that it has to be smaller across the board then redo the total heights with the new ratio
-        if (y > maxHeight) {
-            console.log(`too tall`);
-            const r = maxHeight / y;
-            obj = _editGroupsY(r, page, item, order);
-            groupElements = obj.groupElements;
-            y = obj.y;
-        }
-        console.log(`---AFTER---`);
-        console.log(maxHeight);
-        console.log(y);
-        
-        //Background Shape or Image
-        groupElements.push(new constructorElement(2, page.backgroundType, 0, item.width, item.height, 1, ``, item, order));
-        
-        page.elements = groupElements;
+        if (obj.height > maxHeight)
+            obj = _editGroupsY((maxHeight / obj.height), page, item, order);
 
+        diffHeight = (page.align == 2) ? (maxHeight - obj.height) / 2 : maxHeight - obj.height;
+        page.elements = obj.elements;
+
+        if (page.align == 2 || page.align == 3) //center            
+            for (let element of page.elements)
+                element.y = element.y + diffHeight;
+
+        //Background Shape or Image
+        page.elements.push(new constructorElement(2, page.backgroundType, 0, item.width, item.height, 1, ``, item, order));
+        
         _getLoadImages(page, pageCallback, item);
         
     }
@@ -412,45 +394,14 @@ const AutomateCanvas = (function () {
         //});
 
     }
-    const _getCanvas = function (order) {
-
-        async.each(order.items, function(item, itemCallback) {
-            console.log(`item start`);
-            
-            async.each(item.pages, function(page, pageCallback) {
-                console.log(`page start`);
-            
-                //console.log(page);
-                $(`m-body`).append(`<m-canvas data-sortOrder="${page.sortOrder}" class="" style="width: ${item.width - (item.bleed + item.trim)}px;height: ${item.height - (item.bleed + item.trim)}px;">
-                        <m-handles style="left: -${item.bleed}px;top: -${item.bleed}px;"></m-handles>
-                        <m-elements style="left: -${item.bleed}px;top: -${item.bleed}px;"></m-elements>
-                        <m-snap data-type="left" class="hidden"></m-snap>
-                        <m-snap data-type="top" class="hidden"></m-snap>
-                    </m-canvas>`);
-                
-                for (let element of page.elements)
-                    AutomateCanvas.addToCanvas(element, page, item);
-                
-                pageCallback();
-                
-            }, function (err) {
-                console.log(`page done`);
-                itemCallback();
-            });
-
-        }, function (err) {
-            console.log(`item done`);
-        });
-        
-    }
     const _getHtmlHandle = function (element) {
         
         if (element.isImage && element.type != 4)
-            return `<m-handle data-id="${element.elementId}" style="z-index: ${element.sortOrder + 100};width: ${element.width}px;height: ${element.height}px;left: ${element.x}px;top: ${element.y}px;">
+            return `<m-handle class="btnOpenModule" data-function="Element.getHtml" data-args="${element.elementId}" data-position="left" data-id="${element.elementId}" style="z-index: ${element.sortOrder + 100};width: ${element.width}px;height: ${element.height}px;left: ${element.x}px;top: ${element.y}px;">
                     <m-button class="primary btnInitCroppie" data-id="${element.elementId}">Edit Photo</m-button>
                 </m-handle>`;
         else
-            return `<m-handle data-id="${element.elementId}" style="z-index: ${element.sortOrder + 100};width: ${element.width}px;height: ${element.height}px;left: ${element.x}px;top: ${element.y}px;"></m-handle>`;
+            return `<m-handle class="btnOpenModule" data-function="Element.getHtml" data-args="${element.elementId}" data-position="right" data-id="${element.elementId}" style="z-index: ${element.sortOrder + 100};width: ${element.width}px;height: ${element.height}px;left: ${element.x}px;top: ${element.y}px;"></m-handle>`;
 
     }
     const _getBeforeStartDraggable = function (element, page, item) {
@@ -666,6 +617,33 @@ const AutomateCanvas = (function () {
         return lines;
 
     }
+    const _getTextAutomation = function (element, r, page, item, order) {
+        //Leaving this function here becuase I could use it in the future for different text types or what not
+        let obj = {
+            width: 0,
+            height: 0,
+            marginTop: 0,
+            marginBottom: 0,
+            x: 0,
+            fontSize: 0,
+            path: ``
+        };
+
+        element.width = item.width - ((item.bleed + item.trim) * 2);
+        
+        return {
+            width:          element.width,
+            height:         _getTextHeight(element, r),      
+            voidWidth:      0,   
+            voidHeight:     0,  
+            marginTop:      element.marginTop * r,   
+            marginBottom:   element.marginBottom * r,
+            x:              item.bleed + item.trim,
+            fontSize:       element.fontSize * r,
+            path:           ``
+        };
+        
+    }
     
     const _getImage = function (element, page) {
         
@@ -764,24 +742,30 @@ const AutomateCanvas = (function () {
         //y = 305.9649 + 0.000182001*x - 5.810163e-12*x^2 with new areas
         return 305.9649 + (0.000182001 * x) + ((5.81 * Math.pow(10, -12)) * Math.pow(x, 2));
     }
-    const _getImageAutomation = function (obj, r, page, item, order) {
+    const _getImageAutomation = function (element, r, page, item, order) {
         
-        let width = 0;
-        let height = 0;
         let file;
-        let path = ``;
+        let obj = {
+            width: 0,
+            height: 0,
+            voidWidth: 0,
+            voidHeight: 0,
+            marginTop: 0,
+            marginBottom: 0,
+            path: ``
+        };
 
-        if (obj.type == 4) { //logo
+        if (element.type == 4) { //logo
             
-            width = obj.width;
-            height = obj.height;
             file = order.files.filter(function(x) { return x.type == 5; })[0];
-            path = file.path;
+            obj.path = file.path;
+            obj.width = element.width;
+            obj.height = (element.width / file.width) * file.height;
 
-        } else if (obj.type == 3) { //hero
+        } else if (element.type == 3) { //hero
             
             file = order.files.filter(function(x) { return x.isPrimary; })[0];
-            path = file.path;
+            obj.path = file.path;
 
             if (page.groups.length == 1) { //Only thing on the page
 
@@ -789,22 +773,32 @@ const AutomateCanvas = (function () {
                 const isWidth = (min == item.width) ? true : false;
                 const minLength = min - ((item.bleed + item.trim) * 6);
                 
-                width = (isWidth) ? minLength : (minLength / 16) * 9;
-                height = (isWidth) ? (minLength / 16) * 9 : minLength;
+                obj.width = (isWidth) ? minLength : (minLength / 16) * 9;
+                obj.height = (isWidth) ? (minLength / 16) * 9 : minLength;
 
             } else {
                 
-                width = _getImageWidth(item.width * item.height);
-                height = width * 1.27;
+                obj.width = _getImageWidth(item.width * item.height);
+                obj.height = obj.width * 1.27;
 
             }
+
+            obj.voidWidth = obj.width;
+            obj.voidHeight = obj.height;
+            obj.marginBottom = obj.height * .1; //10% of total height guessing at this
             
         }
         
         return {
-            width: width * r,
-            height: height * r,
-            path: path
+            width:          obj.width * r,
+            height:         obj.height * r,      
+            voidWidth:      obj.voidWidth * r,   
+            voidHeight:     obj.voidHeight * r,  
+            marginTop:      obj.marginTop * r,   
+            marginBottom:   obj.marginBottom * r,
+            x:              (item.width - (obj.width * r)) / 2,
+            fontSize:       0,
+            path:           obj.path
         };
         
     }
@@ -975,7 +969,71 @@ const AutomateCanvas = (function () {
         console.log(`fdsa`);
     }
     
-    const _downloadZip = function (order) {
+    //Public -------------------------------------------------
+    const init = function () {
+        $(document).on(`input`, `#rngEditZoom`, function () { console.log(`chg`); _editZoom($(`#rngEditZoom`).val()); });
+    }
+    
+    const addToCanvas = function (element, page, item) {
+        //console.log(element);
+        $(`m-handle[data-id="${element.elementId}"], img[data-id="${element.elementId}"]`).remove();
+        
+        //if ($(`m-layers m-page.active`).attr(`data-sortOrder`) == element.page) Template.editLayerPage(element.page);
+        
+        if (element.isDeleted) return; //-----------------------------------------------------------------------------
+        
+        $(`m-canvas[data-sortOrder="${page.sortOrder}"] m-elements`).append(`<img data-id="${element.elementId}" src="${element.context.canvas.toDataURL()}" style="z-index: ${element.sortOrder};width: ${element.width}px;height: ${element.height}px;left: ${element.x}px;top: ${element.y}px;" />`);
+
+        if (element.isSelectable)   $(`m-canvas[data-sortOrder="${page.sortOrder}"] m-handles`).append(_getHtmlHandle(element));
+        if (element.isDraggable)    _initDraggable(element, page, item);
+        if (element.isSizeable)     _initSizeable(element, page, item);
+        
+    }
+    
+    const getCanvas = function (order) {
+
+        async.each(order.items, function(item, itemCallback) {
+            console.log(`item start`);
+            
+            async.each(item.pages, function(page, pageCallback) {
+                console.log(`page start`);
+            
+                //console.log(page);
+                $(`m-body`).append(`<m-canvas data-sortOrder="${page.sortOrder}" class="" style="width: ${item.width - (item.bleed + item.trim)}px;height: ${item.height - (item.bleed + item.trim)}px;">
+                        <m-handles style="left: -${item.bleed}px;top: -${item.bleed}px;"></m-handles>
+                        <m-elements style="left: -${item.bleed}px;top: -${item.bleed}px;"></m-elements>
+                        <m-snap data-type="left" class="hidden"></m-snap>
+                        <m-snap data-type="top" class="hidden"></m-snap>
+                    </m-canvas>`);
+                
+                for (let element of page.elements)
+                    AutomateCanvas.addToCanvas(element, page, item);
+                
+                pageCallback();
+                
+            }, function (err) {
+                console.log(`page done`);
+                itemCallback();
+            });
+
+        }, function (err) {
+            console.log(`item done`);
+        });
+        
+    }
+
+    const start = async (order) => {
+        
+        async.each(order.items, function(item, itemCallback) {
+            console.log(`item start`);
+            _getPages(item, itemCallback, order);
+        }, function (err) {
+            console.log(`item done`);
+            order.callback(order);
+        });
+        
+    }
+    const downloadZip = function (order) {
         
         let doc = new jsPDF('', 'pt');
 
@@ -1006,165 +1064,13 @@ const AutomateCanvas = (function () {
         });
         
     }
-
-    //Public -------------------------------------------------
-    let is = {
-        orderId: ``,
-        name: `Jacob Berding`,
-        callback: function (order) { 
-            //_downloadZip(order);
-            _getCanvas(order);
-        },
-        company: {
-            companyId: ``,
-            fontHeader: `Great Vibes`,
-            fontSubHeader: `Lora`,
-            fontBody: `Didact Gothic`,
-            voidShape: 1
-        },
-        files: [{
-            orderFileId: ``,
-            orderId: ``,
-            path: `https://files.themolo.com/_orders/thumbnails/fde474a5-2f51-484c-98de-d8cc5658a6ec.jpg`,
-            originalFileName: ``,
-            width: 0,
-            height: 0,
-            resolutionHorizontal: 0,
-            resolutionVertical: 0,
-            contentLength: 0,
-            type: 1, //1 user uploaded
-            isWarning: false,
-            isPrimary: true,
-            isDeleted: false
-        },{
-            orderFileId: ``,
-            orderId: ``,
-            path: `https://files.themolo.com/_companies/5c2e8f58-e56e-4a9b-81c0-c9ba729255cc.png`,
-            originalFileName: ``,
-            width: 0,
-            height: 0,
-            resolutionHorizontal: 0,
-            resolutionVertical: 0,
-            contentLength: 0,
-            type: 5, //5 company template logo
-            isWarning: false,
-            isPrimary: false,
-            isDeleted: false
-        }],
-        events: [{
-            orderEventId: ``,
-            orderId: ``,
-            type: 1, //1 Visitation 2 Funeral 3 Cemetery
-            name: `Visitation Service for Family`,
-            startDate: `02/08/2017`,
-            startTime: `11:00am`,
-            endDate: `02/08/2017`,
-            endTime: `1:00pm`,
-            location: `Our Lady of Victory`,
-            address: `5415 Dengail Dr`,
-            section: ``,
-            officiant: `Jacob Berding`,
-            details: ``
-        }],
-        items: [{ 
-            width: 702,//648,//2430,
-            height: 1026,//1890,//3726,
-            bleed: 24,
-            trim: 24,
-            pages: [{
-                pageId: ``,
-                itemId: ``,
-                canvas: {},
-                context: {},
-                toDataURL: ``,
-                sortOrder: 1,
-                backgroundType: 2,//1 color 2 white 3 template
-                align: 1, //1 top 2 center 3 bottom
-                isAutomated: true,
-                isDeleted: false,
-                groups: [
-                {
-                    groupId: ``,
-                    pageId: ``,
-                    type: 4, //1 Event 2 Logo 3 Name DOB DOD 4 Photo
-                    eventType: 0,
-                    sortOrder: 1,
-                    isEvent: false,
-                    isSectionExcluded: false,
-                    isDeleted: false
-                },
-                {
-                    groupId: ``,
-                    pageId: ``,
-                    type: 3, //1 Event 2 Logo 3 Name DOB DOD 4 Photo
-                    eventType: 0,
-                    sortOrder: 2,
-                    isEvent: false,
-                    isSectionExcluded: false,
-                    isDeleted: false
-                },
-                {
-                    groupId: ``,
-                    pageId: ``,
-                    type: 1, //1 Event 2 Logo 3 Name DOB DOD 4 Photo
-                    eventType: 1,
-                    sortOrder: 3,
-                    isEvent: true,
-                    isSectionExcluded: false,
-                    isDeleted: false
-                },
-                {
-                    groupId: ``,
-                    pageId: ``,
-                    type: 2, //1 Event 2 Logo 3 Name DOB DOD 4 Photo
-                    eventType: 0,
-                    sortOrder: 4,
-                    isEvent: false,
-                    isSectionExcluded: false,
-                    isDeleted: false
-                }],
-                elements: []
-            }]
-        }]
-    };
-    const init = function () {
-        $(document).on(`tap`, `#btnEditZoom`, function () { _editZoom($(`#txtZoom`).val()); });
-    }
-    
-    const addToCanvas = function (element, page, item) {
-        //console.log(element);
-        $(`m-handle[data-id="${element.elementId}"], img[data-id="${element.elementId}"]`).remove();
-        
-        //if ($(`m-layers m-page.active`).attr(`data-sortOrder`) == element.page) Template.editLayerPage(element.page);
-        
-        if (element.isDeleted) return; //-----------------------------------------------------------------------------
-        
-        $(`m-canvas[data-sortOrder="${page.sortOrder}"] m-elements`).append(`<img data-id="${element.elementId}" src="${element.context.canvas.toDataURL()}" style="z-index: ${element.sortOrder};width: ${element.width}px;height: ${element.height}px;left: ${element.x}px;top: ${element.y}px;" />`);
-
-        if (element.isSelectable)   $(`m-canvas[data-sortOrder="${page.sortOrder}"] m-handles`).append(_getHtmlHandle(element));
-        if (element.isDraggable)    _initDraggable(element, page, item);
-        if (element.isSizeable)     _initSizeable(element, page, item);
-        
-    }
-
-    const waitFor = (ms) => new Promise(r => setTimeout(r, ms));
-    const start = async (order) => {
-        
-        async.each(order.items, function(item, itemCallback) {
-            console.log(`item start`);
-            _getPages(item, itemCallback, order);
-        }, function (err) {
-            console.log(`item done`);
-            order.callback(order);
-        });
-        
-    }
     
     return {
-        is: is,
         init: init,
         addToCanvas: addToCanvas,
-        start: start
+        getCanvas: getCanvas,
+        start: start,
+        downloadZip: downloadZip
     }
 
 })();

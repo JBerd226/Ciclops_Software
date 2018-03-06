@@ -16,7 +16,7 @@ const Application = (function () {
 
     //Private ----------------------------------------------------------
     const _easing = [.54, -0.23, .45, 1.26];
-    const _durationShort = 300;
+    const _durationShort = 200;
     const _durationLong = 700;
     
     const _keyUp = function (e) {
@@ -63,7 +63,7 @@ const Application = (function () {
         //Public ----------------------------------------------------------
         const init = function () {
             
-            AutomateCanvas.start(AutomateCanvas.is);
+            AutomateCanvas.start(Order.is);
             AutomateCanvas.init();
 
             Application.init();
@@ -73,6 +73,7 @@ const Application = (function () {
             SignUp.init();
             ForgotPassword.init();
             Company.init();
+            Element.init();
             
         }
 
@@ -161,8 +162,7 @@ const Application = (function () {
 
             <m-body>
                 Logged In <m-button data-type="primary" id="btnSignOut">Sign Out</m-button>
-                <input type="text" id="txtZoom" />
-                <m-button data-type="primary" id="btnEditZoom">Edit Zoom</m-button>
+                <input type="range" min="10" max="100" id="rngEditZoom" />
             </m-body>
 
             `;
@@ -183,13 +183,50 @@ const Application = (function () {
 const Module = (function () {
     
     //Private ----------------------------------------------------------
+    let _historyLeft = [];
+    let _historyRight = [];
     
+    const _openModuleComplete = function (f = ``, args = ``, position = `left`, c = ``) {
+        
+        const transition = (position == `left`) ? `transition.slideLeftIn` : `transition.slideRightIn`;
+
+        if (position == `left`)
+            _historyLeft.push({ f: f, args: args }); 
+        else
+            _historyRight.push({ f: f, args: args }); 
+
+        Module.isOpen = true;
+        document.getElementsByTagName(`m-module`)[0].className = c;
+        $(`m-module`).html(Application.getFunctionByName(f, args)).velocity(transition, Application.velocitySettings.options);
+        
+    }
+
     //Public ----------------------------------------------------------
+    let isOpen = false;
     const init = function () {
+        $(document).on(`tap`, `.btnOpenModule`, function () { Module.openModule($(this).attr(`data-function`), $(this).attr(`data-args`), $(this).attr(`data-position`)); });
         $(document).on(`tap`, `.btnEditCard`, function (e) { e.preventDefault(); e.stopImmediatePropagation(); Module.editCard($(this), $(this).attr(`data-function`), $(this).attr(`data-args`)); });
         $(document).on(`tap`, `.btnReplaceCard`, function (e) { e.preventDefault(); e.stopImmediatePropagation(); Module.replaceCard($(this).attr(`data-label`), $(this).attr(`data-function`), $(this).attr(`data-args`)); });
     }
     
+    const openModule = function (f = ``, args = ``, position = `left`, c = ``) {
+        
+        const transition = (position == `left`) ? `transition.slideLeftOut` : `transition.slideRightOut`;
+
+        if (!Module.isOpen) {
+            $(`body`).prepend(`<m-module data-position="${position}"></m-module>`);
+            _openModuleComplete(f, args, position, c);
+        } else {
+            $(`m-module[data-position="${position}"]`).velocity(`stop`).velocity(transition, {
+                duration: Application.velocitySettings.durationShort, 
+                easing: Application.velocitySettings.easing,
+                display: `flex`,
+                complete: function () { _openModuleComplete(f, args, position, c); }
+            });
+        }
+
+    }
+
     const editCard = function ($this, f, args) {
         const $el = $this.parentsUntil(`m-card`).parent();
         $el.velocity(`stop`).velocity('transition.slideRightOut', {
@@ -215,7 +252,9 @@ const Module = (function () {
     }
 
     return {
+        isOpen: isOpen,
         init: init,
+        openModule: openModule,
         editCard: editCard,
         replaceCard: replaceCard
     }
@@ -729,6 +768,143 @@ const ForgotPassword = (function () {
 
 })();
 
+const Order = (function () {
+
+    //Private ---------------------------------------------
+    let _timeout;
+    
+    //Public ----------------------------------------------
+    let is = {
+        orderId: ``,
+        name: `Jacob Berding`,
+        callback: function (order) { 
+            //_downloadZip(order);
+            AutomateCanvas.getCanvas(order);
+        },
+        company: {
+            companyId: ``,
+            fontHeader: `Great Vibes`,
+            fontSubHeader: `Lora`,
+            fontBody: `Didact Gothic`,
+            voidShape: 1
+        },
+        files: [{
+            orderFileId: ``,
+            orderId: ``,
+            path: `https://files.themolo.com/_orders/thumbnails/fde474a5-2f51-484c-98de-d8cc5658a6ec.jpg`,
+            originalFileName: ``,
+            width: 700,
+            height: 525,
+            resolutionHorizontal: 0,
+            resolutionVertical: 0,
+            contentLength: 0,
+            type: 1, //1 user uploaded
+            isWarning: false,
+            isPrimary: true,
+            isDeleted: false
+        },{
+            orderFileId: ``,
+            orderId: ``,
+            path: `https://files.themolo.com/_companies/5c2e8f58-e56e-4a9b-81c0-c9ba729255cc.png`,
+            originalFileName: ``,
+            width: 498,
+            height: 172,
+            resolutionHorizontal: 0,
+            resolutionVertical: 0,
+            contentLength: 0,
+            type: 5, //5 company template logo
+            isWarning: false,
+            isPrimary: false,
+            isDeleted: false
+        }],
+        events: [{
+            orderEventId: ``,
+            orderId: ``,
+            type: 1, //1 Visitation 2 Funeral 3 Cemetery
+            name: `Visitation Service for Family`,
+            startDate: `02/08/2017`,
+            startTime: `11:00am`,
+            endDate: `02/08/2017`,
+            endTime: `1:00pm`,
+            location: `Our Lady of Victory`,
+            address: `5415 Dengail Dr`,
+            section: ``,
+            officiant: `Jacob Berding`,
+            details: ``
+        }],
+        items: [{ 
+            width: 702,//648,//2430,
+            height: 1026,//1890,//3726,
+            bleed: 24,
+            trim: 24,
+            pages: [{
+                pageId: ``,
+                itemId: ``,
+                canvas: {},
+                context: {},
+                toDataURL: ``,
+                sortOrder: 1,
+                backgroundType: 2,//1 color 2 white 3 template
+                align: 2, //1 top 2 center 3 bottom
+                isAutomated: true,
+                isDeleted: false,
+                groups: [
+                {
+                    groupId: ``,
+                    pageId: ``,
+                    type: 4, //1 Event 2 Logo 3 Name DOB DOD 4 Photo
+                    eventType: 0,
+                    sortOrder: 1,
+                    isEvent: false,
+                    isSectionExcluded: false,
+                    isDeleted: false
+                },
+                {
+                    groupId: ``,
+                    pageId: ``,
+                    type: 3, //1 Event 2 Logo 3 Name DOB DOD 4 Photo
+                    eventType: 0,
+                    sortOrder: 2,
+                    isEvent: false,
+                    isSectionExcluded: false,
+                    isDeleted: false
+                },
+                //{
+                //    groupId: ``,
+                //    pageId: ``,
+                //    type: 1, //1 Event 2 Logo 3 Name DOB DOD 4 Photo
+                //    eventType: 1,
+                //    sortOrder: 3,
+                //    isEvent: true,
+                //    isSectionExcluded: false,
+                //    isDeleted: false
+                //},
+                //{
+                //    groupId: ``,
+                //    pageId: ``,
+                //    type: 2, //1 Event 2 Logo 3 Name DOB DOD 4 Photo
+                //    eventType: 0,
+                //    sortOrder: 4,
+                //    isEvent: false,
+                //    isSectionExcluded: false,
+                //    isDeleted: false
+                //}
+                ],
+                elements: []
+            }]
+        }]
+    };
+    const init = function () {
+
+    }
+    
+    return {
+        is: is,
+        init: init
+    }
+
+})();
+
 const Company = (function () {
 
     //Private ---------------------------------------------
@@ -868,6 +1044,51 @@ const Company = (function () {
         is: is,
         init: init,
         getHtmlCard: getHtmlCard
+    }
+
+})();
+const Element = (function () {
+
+    //Private ---------------------------------------------
+    let _timeout;
+    
+    //Public ----------------------------------------------
+    const init = function () {
+
+    }
+    
+    const getById = function (id) {
+
+        let arr = [];
+
+        for (let item of Order.is.items)
+            for (let page of item.pages)
+                arr = arr.concat(page.elements);
+
+        return arr.filter(function (obj) { return obj.elementId == id; })[0];
+
+    }
+    const getHtml = function (id) {
+
+        const obj = Element.getById(id);
+
+        return `
+
+            <m-header>
+                Header
+            </m-header>
+
+            <m-body>
+                ${obj.text}
+            </m-body>
+
+            `;
+    }
+
+    return {
+        init: init,
+        getById: getById,
+        getHtml: getHtml
     }
 
 })();

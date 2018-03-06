@@ -1,8 +1,6 @@
 ﻿body {
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: block;
 	font-family: 'Open Sans', sans-serif;
     overflow: hidden;
     background-color: #EEE;
