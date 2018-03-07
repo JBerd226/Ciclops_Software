@@ -1,4 +1,4 @@
-﻿body {
+body {
     min-height: 100vh;
     display: block;
 	font-family: 'Open Sans', sans-serif;
@@ -22,7 +22,7 @@ m-canvas {
     display: block;
     margin: 1em;
     -webkit-box-shadow: 0 2px 5px rgba(0,0,0,.25);
-            box-shadow: 0 2px 5px rgba(0,0,0,.25);
+    box-shadow: 0 2px 5px rgba(0,0,0,.25);
     overflow: hidden;
     position: relative;
     transform: scale(.5);
@@ -203,10 +203,87 @@ m-authentication {
 .icon-edit,
 .icon-create,
 .icon-search,
-.icon-notification {
+.icon-notification,
+.icon-settings,
+.icon-engineer-symbol,
+.icon-text-color,
+.icon-text-height,
+.icon-text-cursor,
+.icon-add-text,
+.icon-text-width,
+.icon-typography,
+.icon-text-align-left,
+.icon-list,
+.icon-paste,
+.icon-lowercase,
+.icon-type,
+.icon-align-justify,
+.icon-align-center,
+.icon-align-right,
+.icon-strikethrough,
+.icon-uppercase,
+.icon-horizontal-line,
+.icon-rounded-rectangle-stroked,
+.icon-pentagon,
+.icon-triangle,
+.icon-hexagon,
+.icon-oval,
+.icon-rectangular,
+.icon-image,
+.icon-image-file,
+.icon-rotate-left,
+.icon-paint-bucket,
+.icon-resize,
+.icon-crop,
+.icon-rotate,
+.icon-rotate-right,
+.icon-flip-horizontal,
+.icon-drag-reorder,
+.icon-product,
+.icon-bring-forward,
+.icon-send-to-back,
+.icon-gender-neutral-user,
+.icon-sign-out,
+.icon-circled-question-mark,
+.icon-available-updates,
+.icon-thumbs-up-hand,
+.icon-email-address,
+.icon-in-progress,
+.icon-tasks,
+.icon-opacity,
+.icon-resize-corners,
+.icon-magnifying-glass-with-plus,
+.icon-magnifying-glass-with-minus,
+.icon-underline,
+.icon-bold,
+.icon-italic,
+.icon-page,
+.icon-layers,
+.icon-push-cart,
+.icon-purchase-order,
+.icon-checkout,
+.icon-shipping,
+.icon-shipping-truck,
+.icon-airport,
+.icon-sent,
+.icon-event,
+.icon-event-2,
+.icon-event-3,
+.icon-group,
+.icon-group-objects,
+.icon-step-back,
+.icon-forward,
+.icon-send-backward,
+.icon-copy-to-clipboard,
+.icon-copy,
+.icon-template,
+.icon-card-payment,
+.icon-payment-history,
+.icon-debit-cards,
+.icon-bill {
     display: inline-block;
-    width: 1.5em;
-    height: 1.5em;
+    width: 1.2em;
+    height: 1.2em;
     fill: currentColor;
     vertical-align: -0.1em;
 }
@@ -229,13 +306,92 @@ m-authentication {
 .icon-edit > svg,
 .icon-create > svg,
 .icon-search > svg,
-.icon-notification > svg {
+.icon-notification > svg,
+.icon-settings > svg,
+.icon-engineer-symbol > svg,
+.icon-text-color > svg,
+.icon-text-height > svg,
+.icon-text-cursor > svg,
+.icon-add-text > svg,
+.icon-text-width > svg,
+.icon-typography > svg,
+.icon-text-align-left > svg,
+.icon-list > svg,
+.icon-paste > svg,
+.icon-lowercase > svg,
+.icon-type > svg,
+.icon-align-justify > svg,
+.icon-align-center > svg,
+.icon-align-right > svg,
+.icon-strikethrough > svg,
+.icon-uppercase > svg,
+.icon-horizontal-line > svg,
+.icon-rounded-rectangle-stroked > svg,
+.icon-pentagon > svg,
+.icon-triangle > svg,
+.icon-hexagon > svg,
+.icon-oval > svg,
+.icon-rectangular > svg,
+.icon-image > svg,
+.icon-image-file > svg,
+.icon-rotate-left > svg,
+.icon-paint-bucket > svg,
+.icon-resize > svg,
+.icon-crop > svg,
+.icon-rotate > svg,
+.icon-rotate-right > svg,
+.icon-flip-horizontal > svg,
+.icon-drag-reorder > svg,
+.icon-product > svg,
+.icon-bring-forward > svg,
+.icon-send-to-back > svg,
+.icon-gender-neutral-user > svg,
+.icon-sign-out > svg,
+.icon-circled-question-mark > svg,
+.icon-available-updates > svg,
+.icon-thumbs-up-hand > svg,
+.icon-email-address > svg,
+.icon-in-progress > svg,
+.icon-tasks > svg,
+.icon-opacity > svg,
+.icon-resize-corners > svg,
+.icon-magnifying-glass-with-plus > svg,
+.icon-magnifying-glass-with-minus > svg,
+.icon-underline > svg,
+.icon-bold > svg,
+.icon-italic > svg,
+.icon-page > svg,
+.icon-layers > svg,
+.icon-push-cart > svg,
+.icon-purchase-order > svg,
+.icon-checkout > svg,
+.icon-shipping > svg,
+.icon-shipping-truck > svg,
+.icon-airport > svg,
+.icon-sent > svg,
+.icon-event > svg,
+.icon-event-2 > svg,
+.icon-event-3 > svg,
+.icon-group > svg,
+.icon-group-objects > svg,
+.icon-step-back > svg,
+.icon-forward > svg,
+.icon-send-backward > svg,
+.icon-copy-to-clipboard > svg,
+.icon-copy > svg,
+.icon-template > svg,
+.icon-card-payment > svg,
+.icon-payment-history > svg,
+.icon-debit-cards > svg,
+.icon-bill > svg {
     display: inline-block;
-    width: 1.5em;
-    height: 1.5em;
+    width: 1.2em;
+    height: 1.2em;
     fill: currentColor;
     vertical-align: -0.1em;
 }
+
+
 
 
 

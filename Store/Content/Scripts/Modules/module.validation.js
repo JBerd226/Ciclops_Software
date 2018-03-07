@@ -65,7 +65,7 @@ const Validation = (function () {
         $(`.error`).removeClass(`error`);
 
         if (Application.ajaxInProgress) Validation.addErrorGeneric(`Syncing data . . .`);
-        _btn.addClass("disabled").html(`<i class="icon-restart"><svg style="width: 20px;height: 20px;margin-top: 8px;fill: #FFF;"><use xlink:href="/Content/Images/Zaki.min.svg#icon-restart"></use></svg></i>`);
+        _btn.addClass("disabled").html(`<i class="icon-restart"><svg style="width: 20px;height: 20px;margin-top: 8px;fill: #FFF;"><use xlink:href="/Content/Images/Ciclops.min.svg#icon-restart"></use></svg></i>`);
     
         $.each($parent.find("input,select,textarea"), function () { if ($(this).attr("required")) _getIsValidElement($(this)); });
     
@@ -110,7 +110,7 @@ const Validation = (function () {
         $(`body`).append(`<m-notification class="${c} d3">
                 <h1>
                     <span>${t}</span>
-                    <i class="icon-delete-3 btnCloseNotification"><svg style="width: 20px;height: 20px;"><use xlink:href="/Content/Images/Zaki.min.svg#icon-delete-3"></use></svg></i>
+                    <i class="icon-delete-3 btnCloseNotification"><svg style="width: 20px;height: 20px;"><use xlink:href="/Content/Images/Ciclops.min.svg#icon-delete-3"></use></svg></i>
                 </h1>
                 <p>${m}</p>
             </m-notification>`);

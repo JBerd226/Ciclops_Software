@@ -72,8 +72,10 @@ const Application = (function () {
             SignIn.init();
             SignUp.init();
             ForgotPassword.init();
-            Company.init();
+            Order.init();
+            Item.init();
             Element.init();
+            Company.init();
             
         }
 
@@ -160,7 +162,7 @@ const Application = (function () {
     const getHtml = function () {
         return `
 
-            <m-body>
+            <m-body aria-label="Main">
                 Logged In <m-button data-type="primary" id="btnSignOut">Sign Out</m-button>
                 <input type="range" min="10" max="100" id="rngEditZoom" />
             </m-body>
@@ -194,26 +196,42 @@ const Module = (function () {
             _historyLeft.push({ f: f, args: args }); 
         else
             _historyRight.push({ f: f, args: args }); 
-
-        Module.isOpen = true;
-        document.getElementsByTagName(`m-module`)[0].className = c;
-        $(`m-module`).html(Application.getFunctionByName(f, args)).velocity(transition, Application.velocitySettings.options);
         
+        $(`m-module[data-position="${position}"]`).attr(`class`, c).html(Application.getFunctionByName(f, args)).velocity(transition, Application.velocitySettings.options);
+        
+    }
+    const _closeModuleComplete = function (position) {
+
+        if ((position == `left` && _historyLeft.length == 0) || (position == `right` && _historyRight.length == 0)) {
+            $(`m-module[data-position="${position}"]`).remove();
+            return;
+        }
+        
+        const transition = (position == `left`) ? `transition.slideLeftIn` : `transition.slideRightIn`;
+        const obj = (position == `left`) ? _historyLeft[_historyLeft.length - 1] : _historyRight[_historyRight.length - 1];
+
+        $(`m-module[data-position="${position}"]`).html(Application.getFunctionByName(obj.f, obj.args)).velocity(transition, Application.velocitySettings.options);
+
     }
 
     //Public ----------------------------------------------------------
-    let isOpen = false;
     const init = function () {
-        $(document).on(`tap`, `.btnOpenModule`, function () { Module.openModule($(this).attr(`data-function`), $(this).attr(`data-args`), $(this).attr(`data-position`)); });
+        $(document).on(`tap`, `.btnCloseModule`, function () { Module.closeModule($(this).attr(`data-position`)); });
+        $(document).on(`tap`, `.btnOpenModule`, function () { Module.openModule($(this).attr(`data-function`), $(this).attr(`data-args`), $(this).attr(`data-position`), $(this).parents(`m-module`).length == 0); });
         $(document).on(`tap`, `.btnEditCard`, function (e) { e.preventDefault(); e.stopImmediatePropagation(); Module.editCard($(this), $(this).attr(`data-function`), $(this).attr(`data-args`)); });
         $(document).on(`tap`, `.btnReplaceCard`, function (e) { e.preventDefault(); e.stopImmediatePropagation(); Module.replaceCard($(this).attr(`data-label`), $(this).attr(`data-function`), $(this).attr(`data-args`)); });
     }
     
-    const openModule = function (f = ``, args = ``, position = `left`, c = ``) {
+    const openModule = function (f = ``, args = ``, position = `left`, isReset = false, c = ``) {
         
         const transition = (position == `left`) ? `transition.slideLeftOut` : `transition.slideRightOut`;
 
-        if (!Module.isOpen) {
+        if (isReset && position == `left`)
+            _historyLeft = [];
+        else if (isReset && position == `right`)
+            _historyRight = [];
+
+        if ($(`m-module[data-position="${position}"]`).length == 0) {
             $(`body`).prepend(`<m-module data-position="${position}"></m-module>`);
             _openModuleComplete(f, args, position, c);
         } else {
@@ -251,12 +269,30 @@ const Module = (function () {
         });
     }
 
+    const closeModule = function (position = `left`) {
+        
+        const transition = (position == `left`) ? `transition.slideLeftOut` : `transition.slideRightOut`;
+
+        if (position == `left`)
+            _historyLeft.splice(_historyLeft.length - 1, 1); 
+        else
+            _historyRight.splice(_historyRight.length - 1, 1); 
+        
+        $(`m-module[data-position="${position}"]`).velocity(`stop`).velocity(transition, {
+            duration: Application.velocitySettings.durationShort, 
+            easing: Application.velocitySettings.easing,
+            display: `none`,
+            complete: function () { _closeModuleComplete(position); }
+        });
+
+    }
+
     return {
-        isOpen: isOpen,
         init: init,
         openModule: openModule,
         editCard: editCard,
-        replaceCard: replaceCard
+        replaceCard: replaceCard,
+        closeModule: closeModule
     }
 
 })();
@@ -560,7 +596,7 @@ const SignUp = (function () {
                         <m-flex data-type="row" class="n">
                             <input type="text" id="txtCompany" placeholder="Company" />
                             <m-flex data-type="row" class="n c sQ h secondary">
-                                <i class="icon-search"><svg><use xlink:href="/Content/Images/Zaki.min.svg#icon-search"></use></svg></i>
+                                <i class="icon-search"><svg><use xlink:href="/Content/Images/Ciclops.min.svg#icon-search"></use></svg></i>
                             </m-flex>
                         </m-flex>
                     </m-input>
@@ -904,6 +940,113 @@ const Order = (function () {
     }
 
 })();
+const Item = (function () {
+
+    //Private ---------------------------------------------
+    let _timeout;
+
+    const _editPageAlign = function (val) {
+        Order.is.items[0].pages[0].align = val;
+        AutomateCanvas.start(Order.is);
+    }
+    
+    //Public ----------------------------------------------
+    const init = function () {
+        $(document).on(`change`, `#dboPageAlign`, function () { _editPageAlign($(this).val()); });
+    }
+    
+    const getHtmlModuleSettings = function () {
+        return `
+
+            <m-header>
+                <m-flex data-type="row" class="n c sQ h secondary btnCloseModule">
+                    <i class="icon-delete-3"><svg><use xlink:href="/Content/Images/Ciclops.min.svg#icon-delete-3"></use></svg></i>
+                </m-flex>
+            </m-header>
+
+            <m-body>
+                <select id="dboPageAlign">
+                    <option value="1">Top</option>
+                    <option value="2">Center</option>
+                    <option value="3">Bottom</option>
+                </select>
+            </m-body>
+
+            `;
+    }
+
+    return {
+        init: init,
+        getHtmlModuleSettings: getHtmlModuleSettings
+    }
+
+})();
+const Element = (function () {
+
+    //Private ---------------------------------------------
+    let _timeout;
+    
+    //Public ----------------------------------------------
+    const init = function () {
+
+    }
+    
+    const getById = function (id) {
+
+        let arr = [];
+
+        for (let item of Order.is.items)
+            for (let page of item.pages)
+                arr = arr.concat(page.elements);
+
+        return arr.filter(function (obj) { return obj.elementId == id; })[0];
+
+    }
+    const getHtml = function (id) {
+
+        const obj = Element.getById(id);
+
+        return `
+
+            <m-header>
+                <m-flex data-type="row" class="n c sQ h secondary btnCloseModule" data-position="right">
+                    <i class="icon-delete-3"><svg><use xlink:href="/Content/Images/Ciclops.min.svg#icon-delete-3"></use></svg></i>
+                </m-flex>
+                <m-flex data-type="row" class="n c sQ h secondary btnOpenModule" data-function="Element.getHtmlLayers" data-position="right">
+                    <i class="icon-layers"><svg><use xlink:href="/Content/Images/Ciclops.min.svg#icon-layers"></use></svg></i>
+                </m-flex>
+            </m-header>
+
+            <m-body>
+                ${obj.text}
+            </m-body>
+
+            `;
+    }
+    const getHtmlLayers = function () {
+        return `
+
+            <m-header>
+                <m-flex data-type="row" class="n c sQ h secondary btnCloseModule" data-position="right">
+                    <i class="icon-delete-3"><svg><use xlink:href="/Content/Images/Ciclops.min.svg#icon-delete-3"></use></svg></i>
+                </m-flex>
+            </m-header>
+
+            <m-body>
+                Layers
+            </m-body>
+
+            `;
+    }
+
+    return {
+        init: init,
+        getById: getById,
+        getHtml: getHtml,
+        getHtmlLayers: getHtmlLayers
+    }
+
+})();
 
 const Company = (function () {
 
@@ -1032,7 +1175,7 @@ const Company = (function () {
                         <h2>${obj.email}</h2>
                     </m-flex>
                     <m-flex data-type="row" class="n c sQ h">
-                        <i class="icon-${(isAdd) ? `create` : `delete-2`}"><svg><use xlink:href="/Content/Images/Zaki.min.svg#icon-${(isAdd) ? `create` : `delete-2`}"></use></svg></i>
+                        <i class="icon-${(isAdd) ? `create` : `delete-2`}"><svg><use xlink:href="/Content/Images/Ciclops.min.svg#icon-${(isAdd) ? `create` : `delete-2`}"></use></svg></i>
                     </m-flex>
                 </m-flex>
             </m-card>
@@ -1044,51 +1187,6 @@ const Company = (function () {
         is: is,
         init: init,
         getHtmlCard: getHtmlCard
-    }
-
-})();
-const Element = (function () {
-
-    //Private ---------------------------------------------
-    let _timeout;
-    
-    //Public ----------------------------------------------
-    const init = function () {
-
-    }
-    
-    const getById = function (id) {
-
-        let arr = [];
-
-        for (let item of Order.is.items)
-            for (let page of item.pages)
-                arr = arr.concat(page.elements);
-
-        return arr.filter(function (obj) { return obj.elementId == id; })[0];
-
-    }
-    const getHtml = function (id) {
-
-        const obj = Element.getById(id);
-
-        return `
-
-            <m-header>
-                Header
-            </m-header>
-
-            <m-body>
-                ${obj.text}
-            </m-body>
-
-            `;
-    }
-
-    return {
-        init: init,
-        getById: getById,
-        getHtml: getHtml
     }
 
 })();

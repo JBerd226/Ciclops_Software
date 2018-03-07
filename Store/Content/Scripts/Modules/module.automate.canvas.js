@@ -397,7 +397,7 @@ const AutomateCanvas = (function () {
     const _getHtmlHandle = function (element) {
         
         if (element.isImage && element.type != 4)
-            return `<m-handle class="btnOpenModule" data-function="Element.getHtml" data-args="${element.elementId}" data-position="left" data-id="${element.elementId}" style="z-index: ${element.sortOrder + 100};width: ${element.width}px;height: ${element.height}px;left: ${element.x}px;top: ${element.y}px;">
+            return `<m-handle class="btnOpenModule" data-function="Element.getHtml" data-args="${element.elementId}" data-position="right" data-id="${element.elementId}" style="z-index: ${element.sortOrder + 100};width: ${element.width}px;height: ${element.height}px;left: ${element.x}px;top: ${element.y}px;">
                     <m-button class="primary btnInitCroppie" data-id="${element.elementId}">Edit Photo</m-button>
                 </m-handle>`;
         else
@@ -992,6 +992,12 @@ const AutomateCanvas = (function () {
     
     const getCanvas = function (order) {
 
+        $(`m-canvas, .btnOpenModule[data-function="Item.getHtmlModuleSettings"]`).remove();
+        $(`m-body[aria-label="Main"]`).append(`
+                <m-flex data-type="row" class="n c sQ h secondary btnOpenModule" data-function="Item.getHtmlModuleSettings">
+                    <i class="icon-settings"><svg><use xlink:href="/Content/Images/Ciclops.min.svg#icon-settings"></use></svg></i>
+                </m-flex>`);
+
         async.each(order.items, function(item, itemCallback) {
             console.log(`item start`);
             
@@ -999,7 +1005,7 @@ const AutomateCanvas = (function () {
                 console.log(`page start`);
             
                 //console.log(page);
-                $(`m-body`).append(`<m-canvas data-sortOrder="${page.sortOrder}" class="" style="width: ${item.width - (item.bleed + item.trim)}px;height: ${item.height - (item.bleed + item.trim)}px;">
+                $(`m-body[aria-label="Main"]`).append(`<m-canvas data-sortOrder="${page.sortOrder}" class="" style="width: ${item.width - (item.bleed + item.trim)}px;height: ${item.height - (item.bleed + item.trim)}px;">
                         <m-handles style="left: -${item.bleed}px;top: -${item.bleed}px;"></m-handles>
                         <m-elements style="left: -${item.bleed}px;top: -${item.bleed}px;"></m-elements>
                         <m-snap data-type="left" class="hidden"></m-snap>
