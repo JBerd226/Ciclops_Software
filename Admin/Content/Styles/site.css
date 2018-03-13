@@ -1,0 +1,30 @@
+﻿/*ADMIN*/
+m-navigation {
+    width: 50px;
+    height: 100%;
+    background-color: #00AEEF;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 1000;
+    position: absolute;
+    transform: translateY(0);
+    top: 0;
+    left: 0;
+}
+    m-navigation i,
+    m-navigation svg {
+        fill: #FFF !important;
+        color: #FFF;
+        width: 1.75em !important;
+        height: 1.75em !important;
+    }
+
+m-body[aria-label="Main"] {
+    padding-left: 50px;
+}
+
+m-flex.sQ span {
+    color: #FFF;
+    font-size: .6em;
+}

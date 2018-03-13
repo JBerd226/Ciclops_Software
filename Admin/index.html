@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <link href="/Content/Images/logo.ico" rel="shortcut icon">
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ciclops | Admin</title>
+
+    <link href="/Content/Styles/fonts.css" rel="stylesheet" />
+    <link href="http://store.ciclops.software/Content/Styles/reset.css" rel="stylesheet" />
+    <link href="http://store.ciclops.software/Content/Styles/flex.css" rel="stylesheet" />
+    <link href="http://store.ciclops.software/Content/Styles/flexDesktop.css" rel="stylesheet" />
+    <link href="http://store.ciclops.software/Content/Styles/site.css" rel="stylesheet" />
+    <link href="/Content/Styles/site.css" rel="stylesheet" />
+
+</head>
+<body>
+
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-messaging.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-storage.js"></script>
+
+    <script src="http://store.ciclops.software/Content/Scripts/Jquery/jquery-3.2.1.min.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Jquery/jquery.mobile-events.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Jquery/jquery-ui.min.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Jquery/jquery.ui.touch-punch.min.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Jquery/jquery.Jcrop.min.js"></script>
+
+    <script src="http://store.ciclops.software/Content/Scripts/Libraries/jspdf.debug.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Libraries/jszip.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Libraries/fileSaver.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Libraries/croppie.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Libraries/moment.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Libraries/moment-timezone-with-data.min.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Libraries/velocity.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Libraries/velocity.ui.min.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Libraries/async.min.js"></script>
+
+    <script src="http://store.ciclops.software/Content/Scripts/Modules/module.validation.js"></script>
+    <script src="/Content/Scripts/Modules/module.application.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Modules/module.global.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Modules/module.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Modules/module.authentication.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Modules/module.automate.text.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Modules/module.automate.canvas.js"></script>
+    <script src="http://store.ciclops.software/Content/Scripts/Modules/list.js"></script>
+
+    <script>
+
+        var WebFontConfig = {
+            custom: {
+                families: ['Open Sans', 'Oswald', 'Lora', 'Cinzel', 'Dancing Script', 'Didact Gothic', 'Grand Hotel', 'Great Vibes', 'Milonga', 'Pacifico', 'Trocchi', 'Parisienne', 'PinyonScript'],
+                urls: ['/Content/Styles/Fonts.css']
+            },
+            loading: function () { },
+            active: function () {
+                Application.Load.init(); //Starts the application
+            },
+            inactive: function () { },
+            fontloading: function (familyName, fvd) { },
+            fontactive: function (familyName, fvd) { },
+            fontinactive: function (familyName, fvd) { }
+        };
+
+        (function () {
+            var wf = document.createElement("script");
+            wf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+                '://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+            wf.async = 'true';
+            document.head.appendChild(wf);
+        })();
+
+    </script>
+
+</body>
+</html>

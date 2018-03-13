@@ -13,6 +13,9 @@
 .hidden {
     visibility: hidden;
 }
+.none {
+    display: none;
+}
 
 p {
     font-size: .9em;
@@ -27,6 +30,7 @@ m-a {
 /*--M-IMAGE-------------------------------------------------------------------------------*/
 m-image {
     position: relative;
+    background-color: #EEE;
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
@@ -39,7 +43,35 @@ m-image {
     m-image.circle {
         border-radius: 50%;
     }
+    m-image.sQ {
+        padding-bottom: 100%;
+    }
+    m-image.cover {
+        background-size: cover;
+    }
 /*--M-IMAGE-------------------------------------------------------------------------------*/
+
+/*--M-BAR-------------------------------------------------------------------------------*/
+m-bar {
+    height: 10px;
+    width: 100%;
+    background-color: #D8D8D8;
+    border-radius: 2px;
+    display: block;
+    position: relative;
+    margin: 0 .5em;
+}
+    m-bar.progress {
+        margin: .5em 0 0 0;
+    }
+    m-bar span {
+        height: 10px;
+        border-radius: 2px;
+        background-color: #00AEEF;
+        position: absolute;
+        display: block;
+    }
+/*--M-BAR-------------------------------------------------------------------------------*/
 
 /*--M-BUTTON-------------------------------------------------------------------------------*/
 m-button {
@@ -185,12 +217,29 @@ m-flex {
     }
     m-flex.sQ {
         width: 100%;
-        min-width: 40px;
-        max-width: 40px;
-        height: 40px;
+        min-width: 50px;
+        max-width: 50px;
+        height: 50px;
     }
+        m-flex.sQ.primary {
+            background-color: #00AEEF;
+            color: #FFF;
+        }
         m-flex.sQ.secondary {
             background-color: #FAFAFA;
+        }
+        m-flex.sQ:hover {
+            cursor: pointer;
+        }
+    m-flex.tab {
+        width: 100%;
+        min-width: 100px;
+        max-width: 100px;
+        height: 50px;
+    }
+        m-flex.tab span {
+            font-size: .7em;
+            margin-left: .5em;
         }
     m-flex.tE {
         text-overflow: ellipsis;
@@ -201,18 +250,22 @@ m-flex {
 
 /*--M-CARD-------------------------------------------------------------------------------*/
 m-card {
+    border: 1px solid #EEE;
     background: #fff;
     border-radius: 2px;
     display: flex;
     flex-direction: column;
     position: relative;
     width: 100%;
-    max-width: 400px;
+    /*max-width: 400px;*/
     min-height: 40px;
     transition: box-shadow 0.35s cubic-bezier(.25,.8,.25,1);
 }   
     m-card.mB {
         margin-bottom: .5em;
+    }
+    m-card.load {
+    background-color: #f1f1f1;
     }
         m-card h2 {
             font-size: .8em;
@@ -233,8 +286,43 @@ m-card {
         }
 /*--M-CARD-------------------------------------------------------------------------------*/
 
+/*--LOADING-------------------------------------------------------------------------------*/
+.loading {
+    width: 100%;
+    display: block;
+    border-radius: 2px;
+    color: transparent !important;
+    background: rgb(221,221,221); /* Old browsers */
+    background: -moz-linear-gradient(-45deg, rgba(221,221,221,1) 0%, rgba(238,238,238,1) 50%, rgba(221,221,221,1) 51%, rgba(238,238,238,1) 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg, rgba(221,221,221,1) 0%,rgba(238,238,238,1) 50%,rgba(221,221,221,1) 51%,rgba(238,238,238,1) 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg, rgba(221,221,221,1) 0%,rgba(238,238,238,1) 50%,rgba(221,221,221,1) 51%,rgba(238,238,238,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    background-size: 200% 200%;
+    background-repeat: no-repeat;
+    -webkit-animation: slide 3s infinite ease-in-out forwards;
+    -moz-animation: slide 3s infinite ease-in-out forwards;
+    animation: slide 3s infinite ease-in-out forwards;
+}
+m-button.loading {
+    width: auto;
+}
+@-webkit-keyframes slide {
+    0% { background-position: 100% 0; }
+    50% { background-position: 0% 0; }
+    100% { background-position: 100% 0; }
+}
+@-moz-keyframes slide {
+    0% { background-position: 100% 0; }
+    50% { background-position: 0% 0; }
+    100% { background-position: 100% 0; }
+}
+@keyframes slide {
+    0% { background-position: 100% 0; }
+    50% { background-position: 0% 0; }
+    100% { background-position: 100% 0; }
+}
+/*--LOADING-------------------------------------------------------------------------------*/
+
 /*--LIST-------------------------------------------------------------------------------*/
-.cards,
 .list {
     background-color: #FFF;
 }
@@ -255,8 +343,18 @@ m-card {
 m-input {
     position: relative;
     width: 100%;
-    margin-bottom: 0;
+    margin-bottom: .5em;
 }
+    m-input.n {
+        margin: 0;
+        padding: 0;
+    }
+    m-input.pL {
+        padding-left: 1em;
+    }
+    m-input.pR {
+        padding-right: 1em;
+    }
     m-input.red {
         border: 1px solid red;
     }
@@ -303,24 +401,28 @@ m-inputs input {
 
 /*--INPUT-------------------------------------------------------------------------------*/
 input {
-    border: none;
-    background-color: #FAFAFA;
+    border: 1px solid #EEE;
+    background-color: #FFF;
     width: 100%;
     max-width: 100%;
     height: 40px;
     outline: none;
     padding: 0 1em;
-    font-size: 1em;
+    font-size: .9em;
     border-radius: 2px;
     font-family: 'Open Sans', sans-serif;
 }
+    m-input input::-webkit-input-placeholder {
+        color: #CCC;
+    }
     input[type="radio"],
     input[type="checkbox"] {
         -webkit-appearance: none;
         width: 30px;
         height: 30px;
         margin: 0 0 0 1em;
-       }
+        position: relative;
+    }
     input[type="radio"]:after,
     input[type="checkbox"]:after {
         content: '\2713';
@@ -329,6 +431,9 @@ input {
         display: flex;
         align-items: center;
         justify-content: center;
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 30px;
         height: 30px;
         border-radius: 2px;
@@ -338,7 +443,7 @@ input {
     input[type="checkbox"]:checked:after {
         width: 30px;
         height: 30px;
-        background-color: #155999;
+        background-color: #00AEEF;
         color: #FFF;
     }
         input[type="radio"]:hover,
@@ -367,8 +472,8 @@ select {
     padding: 0 1em;
     font-size: 1em;
     -webkit-appearance: none;
-    background-color: #FAFAFA;
-    border: none;
+    border: 1px solid #EEE;
+    background-color: #FFF;
     background-image:
         -webkit-linear-gradient(45deg, transparent 50%, gray 50%),
         -webkit-linear-gradient(315deg, gray 50%, transparent 50%),
@@ -406,6 +511,7 @@ label {
        text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    font-weight: 100;
     color: #AAA;
     cursor: text;
     transition: all .2s ease-out;
@@ -441,7 +547,7 @@ m-module {
     display: none;
     width: 90%;
     height: 100%;
-    background-color: #fafafa;
+    background-color: #FFF;
     padding: 0;
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
@@ -456,6 +562,9 @@ m-module {
     -webkit-backface-visibility: hidden; /* Chrome and Safari */
     -moz-backface-visibility: hidden; /* Firefox */
 }
+    m-module > m-header {
+        justify-content: space-between;
+    }
     m-module > m-body {
         padding: 60px 0 0 0;
     }
@@ -469,21 +578,21 @@ m-module {
 
 /*--M-BODY-------------------------------------------------------------------------------*/
 m-body {
-    /* padding: 0; */
+    padding: 0;
     width: 100%;
     height: 100vh;
-    /* top: 0; */
-    /* left: 0; */
+    top: 0;
+    left: 0;
     display: block;
-    /* position: absolute; */
-    /* overflow-y: scroll; */
-    /* overflow-x: hidden; */
-    /* -webkit-transform: translateX(0px); */
+    position: absolute;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    -webkit-transform: translateX(0px);
     -ms-transform: translateX(0px);
-    /* transform: translateX(0px); */
-    /* z-index: 1; */
-    /* backface-visibility: hidden; */
-    /* -webkit-backface-visibility: hidden; */
+    transform: translateX(0px);
+    z-index: 1;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden; 
     -moz-backface-visibility: hidden;
 }
 /*--M-BODY-------------------------------------------------------------------------------*/
@@ -496,9 +605,13 @@ m-header {
     display: flex;
     align-items: center;
     position: relative;
-    background-color: #FFF;
+    background-color: #00AEEF;
     z-index: 100;
 }
+    m-header .sQ,
+    m-header .tab {
+        color: #FFF;
+    }
 /*--M-HEADER-------------------------------------------------------------------------------*/
 
 /*--M-ERROR-------------------------------------------------------------------------------*/

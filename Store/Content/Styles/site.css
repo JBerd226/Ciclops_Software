@@ -1,9 +1,10 @@
+/*STORE*/
 body {
     min-height: 100vh;
     display: block;
 	font-family: 'Open Sans', sans-serif;
     overflow: hidden;
-    background-color: #EEE;
+    background-color: #f5f5f5;
 }
 
 h3 {

@@ -12,7 +12,7 @@ const AutomateCanvas = (function () {
         const arr = getFontSizes(item.width, item.height,  [fontFamily], level);
         const obj = arr[0];
         
-        this.elementId = _getNewId();
+        this.elementId = Global.getNewId();
         this.pageId = ``;
         this.groupId = ``;
         this.fileId = ``;
@@ -287,13 +287,6 @@ const AutomateCanvas = (function () {
             
         return arr;
 
-    }
-    const _getNewId = function () {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let autoId = '';
-        for (let i = 0; i < 20; i++)
-            autoId += chars.charAt(Math.floor(Math.random() * chars.length));
-        return autoId;
     }
 
     const _getPages = function (item, itemCallback, order) {

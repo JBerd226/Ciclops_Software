@@ -18,7 +18,7 @@ const Validation = (function () {
         if ($this.attr("type") == "password")
             _passwords.push({ val: $this.val(), el: $this });
     
-        if ((($this.attr("type") == "text" || $this.attr("type") == "password" || $this.attr("type") == "date" || $this.is("textarea")) && $this.val() == "")
+        if ((($this.attr("type") == "text" || $this.attr("type") == "number" || $this.attr("type") == "password" || $this.attr("type") == "date" || $this.is("textarea")) && $this.val() == "")
             || ($this.attr("type") == "radio" && !$(`input[name='${$this.attr("name")}']:checked`).val()) //Radio Buttons
             || ($this.is("select") && $this.val() == 0) //Dropdown
             || ($this.attr("type") == "email" && !_getIsValidEmail($this.val()))) //Email
@@ -41,7 +41,8 @@ const Validation = (function () {
     
         $this.addClass(`error`);
         $this.parent().find(`m-error`).remove();
-        $this.parent().append(`<m-error>Please fill in the ${$this.parent().find(`label`).html()} field.</m-error>`);
+        //$this.parent().append(`<m-error>Please fill in the ${$this.parent().find(`label`).html()} field.</m-error>`);
+        $this.parent().append(`<m-error>*Required</m-error>`);
 
     }
     const addErrorGeneric = function (ex) {
@@ -104,8 +105,10 @@ const Validation = (function () {
         _errors = 0;
 
     }
-    const notification = function (t, m, c) {
+    const notification = function (type = 1, t = `Success`, m = `Document updated successfully.`, c = `success`) {
         
+        if (type == 2) { t = `Error`; m = `An error has occurred.`; c = `error`; };
+
         $("m-notification").remove();
         $(`body`).append(`<m-notification class="${c} d3">
                 <h1>
